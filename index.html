@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบันทึกวัตถุดิบ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        .department-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .dept-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .dept-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+        }
+        
+        .dept-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        select, input[type="text"], input[type="number"], input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        /* Custom Select with Search */
+        .custom-select-wrapper {
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 40px 12px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            pointer-events: none;
+        }
+        
+        .dropdown-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            margin-top: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .dropdown-list.show {
+            display: block;
+        }
+        
+        .dropdown-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-item:hover {
+            background: #f0f0ff;
+        }
+        
+        .dropdown-item.selected {
+            background: #667eea;
+            color: white;
+        }
+        
+        .dropdown-item.no-results {
+            text-align: center;
+            color: #999;
+            cursor: default;
+        }
+        
+        .dropdown-item.no-results:hover {
+            background: white;
+        }
+        
+        .btn-add {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-add:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+        
+        .list-section {
+            margin-top: 30px;
+        }
+        
+        .list-item {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .list-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 3px 10px rgba(102,126,234,0.2);
+        }
+        
+        .item-details {
+            flex: 1;
+        }
+        
+        .item-name {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .item-info {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .btn-delete {
+            padding: 8px 15px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-delete:hover {
+            background: #ee5a6f;
+        }
+        
+        .output-section {
+            margin-top: 30px;
+        }
+        
+        .output-box {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 150px;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .btn-copy {
+            width: 100%;
+            padding: 15px;
+            background: #10ac84;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-copy:hover {
+            background: #0e9c75;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16,172,132,0.4);
+        }
+        
+        .btn-copy.copied {
+            background: #26de81;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 ระบบบันทึกวัตถุดิบ</h1>
+        
+        <div class="department-selector">
+            <button class="dept-btn active" onclick="selectDepartment('น้ำ')">🥤 แผนกน้ำ</button>
+            <button class="dept-btn" onclick="selectDepartment('เสิร์ฟ')">🍽️ แผนกเสิร์ฟ</button>
+            <button class="dept-btn" onclick="selectDepartment('โรตี')">🥖 แผนกโรตี</button>
+            <button class="dept-btn" onclick="selectDepartment('ครัว')">👨‍🍳 แผนกครัว</button>
+        </div>
+        
+        <div class="input-section">
+            <div class="form-group">
+                <label>วันที่:</label>
+                <input type="date" id="dateInput">
+            </div>
+            
+            <div class="form-group">
+                <label>เลือกวัตถุดิบ:</label>
+                <div class="custom-select-wrapper">
+                    <input type="text" 
+                           class="search-input" 
+                           id="searchInput" 
+                           placeholder="🔍 ค้นหาวัตถุดิบ..."
+                           autocomplete="off">
+                    <span class="search-icon">▼</span>
+                    <div class="dropdown-list" id="dropdownList"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>คงเหลือ:</label>
+                <input type="text" id="remaining" placeholder="เช่น 5 ขวด, 2 กิโล">
+            </div>
+            
+            <div class="form-group">
+                <label>เพิ่ม:</label>
+                <input type="text" id="added" placeholder="เช่น 10 ขวด, 5 กิโล">
+            </div>
+            
+            <div class="form-group">
+                <label>หมายเหตุ:</label>
+                <input type="text" id="note" placeholder="ระบุหมายเหตุ (ถ้ามี)">
+            </div>
+            
+            <button class="btn-add" onclick="addItem()">➕ เพิ่มรายการ</button>
+        </div>
+        
+        <div class="list-section">
+            <h2 style="margin-bottom: 15px; color: #667eea;">รายการที่บันทึก</h2>
+            <div id="itemList"></div>
+        </div>
+        
+        <div class="output-section">
+            <h2 style="margin-bottom: 15px; color: #667eea;">ข้อความสำหรับคัดลอก</h2>
+            <div class="output-box" id="outputText"></div>
+            <button class="btn-copy" onclick="copyText()">📋 คัดลอกข้อความ</button>
+        </div>
+    </div>
+
+    <script>
+        let currentDepartment = 'น้ำ';
+        let items = [];
+        let selectedItem = '';
+        
+        const departmentItems = {
+            'น้ำ': ['น้ำแข็ง', 'น้ำเปล่า', 'น้ำอัดลม', 'นมสด', 'น้ำผลไม้', 'ชา', 'กาแฟ', 'น้ำตาล', 'ครีมเทียม'],
+            'เสิร์ฟ': ['จาน', 'ชาม', 'ช้อน', 'ส้อม', 'มีด', 'แก้ว', 'กระดาษชำระ', 'ผ้าเช็ดโต๊ะ', 'ซอส'],
+            'โรตี': ['แป้งโรตี', 'นมข้นหวาน', 'เนย', 'น้ำตาล', 'ไข่', 'กล้วย', 'ช็อคโกแลต', 'ครีม'],
+            'ครัว': ['น้ำมัน', 'เกลือ', 'พริกไทย', 'ซอส', 'ไข่', 'หอม', 'กระเทียม', 'เนื้อสัตว์', 'ผัก', 'ข้าว']
+        };
+        
+        const searchInput = document.getElementById('searchInput');
+        const dropdownList = document.getElementById('dropdownList');
+        
+        // Event listeners for search input
+        searchInput.addEventListener('focus', function() {
+            filterItems('');
+            dropdownList.classList.add('show');
+        });
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filterItems(searchTerm);
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-select-wrapper')) {
+                dropdownList.classList.remove('show');
+            }
+        });
+        
+        // Handle keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            const items = dropdownList.querySelectorAll('.dropdown-item:not(.no-results)');
+            const selected = dropdownList.querySelector('.dropdown-item.selected');
+            let currentIndex = Array.from(items).indexOf(selected);
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (currentIndex < items.length - 1) {
+                    if (selected) selected.classList.remove('selected');
+                    items[currentIndex + 1].classList.add('selected');
+                    items[currentIndex + 1].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (currentIndex > 0) {
+                    if (selected) selected.classList.remove('selected');
+                    items[currentIndex - 1].classList.add('selected');
+                    items[currentIndex - 1].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selected && !selected.classList.contains('no-results')) {
+                    selectItemFromDropdown(selected.textContent);
+                }
+            }
+        });
+        
+        function filterItems(searchTerm) {
+            const currentItems = departmentItems[currentDepartment];
+            const filtered = currentItems.filter(item => 
+                item.toLowerCase().includes(searchTerm)
+            );
+            
+            dropdownList.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                const noResults = document.createElement('div');
+                noResults.className = 'dropdown-item no-results';
+                noResults.textContent = 'ไม่พบวัตถุดิบที่ค้นหา';
+                dropdownList.appendChild(noResults);
+            } else {
+                filtered.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'dropdown-item';
+                    if (index === 0) div.classList.add('selected');
+                    div.textContent = item;
+                    div.onclick = () => selectItemFromDropdown(item);
+                    dropdownList.appendChild(div);
+                });
+            }
+            
+            dropdownList.classList.add('show');
+        }
+        
+        function selectItemFromDropdown(item) {
+            selectedItem = item;
+            searchInput.value = item;
+            dropdownList.classList.remove('show');
+        }
+        
+        function selectDepartment(dept) {
+            currentDepartment = dept;
+            
+            document.querySelectorAll('.dept-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            searchInput.value = '';
+            selectedItem = '';
+            items = [];
+            updateDisplay();
+        }
+        
+        function addItem() {
+            const itemName = selectedItem || searchInput.value.trim();
+            const remaining = document.getElementById('remaining').value;
+            const added = document.getElementById('added').value;
+            const note = document.getElementById('note').value;
+            
+            if (!itemName) {
+                alert('กรุณาเลือกวัตถุดิบ');
+                return;
+            }
+            
+            if (!remaining && !added) {
+                alert('กรุณากรอกข้อมูลคงเหลือหรือเพิ่มอย่างน้อย 1 รายการ');
+                return;
+            }
+            
+            items.push({
+                name: itemName,
+                remaining: remaining,
+                added: added,
+                note: note
+            });
+            
+            searchInput.value = '';
+            selectedItem = '';
+            document.getElementById('remaining').value = '';
+            document.getElementById('added').value = '';
+            document.getElementById('note').value = '';
+            
+            updateDisplay();
+        }
+        
+        function deleteItem(index) {
+            items.splice(index, 1);
+            updateDisplay();
+        }
+        
+        function updateDisplay() {
+            const listDiv = document.getElementById('itemList');
+            const outputDiv = document.getElementById('outputText');
+            const dateInput = document.getElementById('dateInput').value;
+            
+            if (items.length === 0) {
+                listDiv.innerHTML = '<div class="empty-state">ยังไม่มีรายการ</div>';
+                outputDiv.textContent = '';
+                return;
+            }
+            
+            listDiv.innerHTML = '';
+            items.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'list-item';
+                
+                let infoText = '';
+                if (item.remaining) infoText += `คงเหลือ: ${item.remaining}`;
+                if (item.added) infoText += (infoText ? ' | ' : '') + `เพิ่ม: ${item.added}`;
+                if (item.note) infoText += (infoText ? ' | ' : '') + `หมายเหตุ: ${item.note}`;
+                
+                itemDiv.innerHTML = `
+                    <div class="item-details">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-info">${infoText}</div>
+                    </div>
+                    <button class="btn-delete" onclick="deleteItem(${index})">ลบ</button>
+                `;
+                
+                listDiv.appendChild(itemDiv);
+            });
+            
+            let outputText = '';
+            
+            if (dateInput) {
+                const dateParts = dateInput.split('-');
+                const thaiDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                outputText += ` วันที่: ${thaiDate}\n`;
+            }
+            
+            outputText += `📋 รายการวัตถุดิบ - ${currentDepartment}\n`;
+            outputText += '━'.repeat(20) + '\n';
+            
+            // หาความยาวสูงสุดของชื่อวัตถุดิบ
+            const maxNameLength = Math.max(...items.map(item => item.name.length), 10);
+            const nameWidth = maxNameLength + 2;
+            
+            items.forEach((item, index) => {
+                const num = `${index + 1}.`.padEnd(4);
+                const name = item.name.padEnd(nameWidth);
+                
+                let details = [];
+                if (item.remaining) details.push(`คงเหลือ: ${item.remaining}`);
+                if (item.added) details.push(`เพิ่ม: ${item.added}`);
+                if (item.note) details.push(`*${item.note}`);
+                
+                const detailText = details.join(' | ');
+                outputText += `${num}${name} ${detailText}\n`;
+            });
+            
+            outputText += '━'.repeat(20);
+            
+            outputDiv.textContent = outputText;
+        }
+        
+        function copyText() {
+            const outputText = document.getElementById('outputText').textContent;
+            
+            if (!outputText) {
+                alert('ไม่มีข้อความให้คัดลอก');
+                return;
+            }
+            
+            const btn = event.target;
+            const originalText = btn.textContent;
+            
+            navigator.clipboard.writeText(outputText).then(() => {
+                btn.textContent = '✅ คัดลอกแล้ว!';
+                btn.classList.add('copied');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch((err) => {
+                console.error('Copy error:', err);
+                alert('ไม่สามารถคัดลอกได้ กรุณาลองอีกครั้ง');
+            });
+        }
+        
+        updateDisplay();
+        document.getElementById('dateInput').valueAsDate = new Date();
+    </script>
+</body>
+</html>
