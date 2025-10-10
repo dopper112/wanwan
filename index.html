@@ -549,11 +549,11 @@
                 const name = item.name.padEnd(nameWidth);
                 
                 let details = [];
-                if (item.remaining) details.push(`คงเหลือ: ${item.remaining}`);
-                if (item.added) details.push(`เพิ่ม: ${item.added}`);
+                if (item.remaining) details.push(`${item.remaining}`);
+                if (item.added) details.push(`${item.added}`);
                 if (item.note) details.push(`*${item.note}`);
                 
-                const detailText = details.join(' | ');
+                const detailText = details.join(' - ');
                 outputText += `${num}${name} ${detailText}\n`;
             });
             
